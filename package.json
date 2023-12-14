@@ -1,0 +1,16 @@
+{
+  "name": "ts-test-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd nextjs && pnpm test && cd ../nestjs && pnpm test",
+    "lint": "cd nextjs && pnpm lint && cd ../nestjs && pnpm lint"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^8.0.3"
+  }
+}
