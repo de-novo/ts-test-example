@@ -12,23 +12,26 @@ export type FizzBuzzResult =
   | number;
 
 const fizzBuzz: FizzBuzz = (num) => {
-  if (num === 3 && isPrime(num)) {
-    return "FizzWhiz";
-  }
-  if (num === 5 && isPrime(num)) {
-    return "BuzzWhiz";
-  }
+  const isDividedBy3 = num % 3 === 0;
+  const isDividedBy5 = num % 5 === 0;
+  const isPrimeNumber = isPrime(num);
 
-  if (num % 3 === 0 && num % 5 === 0) {
+  if (isDividedBy3 && isDividedBy5) {
     return "FizzBuzz";
   }
-  if (num % 3 === 0 && !isPrime(num)) {
+  if (isDividedBy3 && isPrimeNumber) {
+    return "FizzWhiz";
+  }
+  if (isDividedBy5 && isPrimeNumber) {
+    return "BuzzWhiz";
+  }
+  if (isDividedBy3) {
     return "Fizz";
   }
-  if (num % 5 === 0 && !isPrime(num)) {
+  if (isDividedBy5) {
     return "Buzz";
   }
-  if (isPrime(num)) {
+  if (isPrimeNumber) {
     return "Whiz";
   }
   return num;
