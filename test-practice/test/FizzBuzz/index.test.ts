@@ -12,126 +12,10 @@ describe("FizzBuzz", () => {
     num = null;
   });
 
-  describe("play", () => {
-    describe("output: Fizz - 3의 배수", () => {
-      const expected = "Fizz";
-
-      it("input:3", () => {
-        // Arrange
-        num = 3;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-
-      it("input:6", () => {
-        // Arrange
-        num = 6;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-    });
-
-    describe("output: Buzz - 5의 배수", () => {
-      const expected = "Buzz";
-      it("input:5", () => {
-        // Arrange
-        num = 5;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-
-      it("input:10", () => {
-        // Arrange
-        num = 10;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-    });
-
-    describe("output: FizzBuzz - 3과 5의 배수", () => {
-      const expected = "FizzBuzz";
-
-      it("input:15", () => {
-        // Arrange
-        num = 15;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-
-      it("input:30", () => {
-        // Arrange
-        num = 30;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(expected);
-      });
-    });
-
-    describe("output: number - 그외", () => {
-      it("input:1", () => {
-        // Arrange
-        num = 1;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(num);
-      });
-
-      it("input:2", () => {
-        // Arrange
-        num = 2;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(num);
-      });
-      it("input:4", () => {
-        // Arrange
-        num = 4;
-
-        // Act
-        const actual = fizzBuzz(num);
-
-        // Assert
-        expect(actual).toEqual(num);
-      });
-    });
-  });
-
   describe("play each", () => {
-    const testCases = new Array(20).fill(0).map((_, index) => index);
-    describe("output: Fizz - 3의 배수", () => {
+    describe("output: Fizz - 3의 배수 이며 5의 배수, 소수가 아닌것", () => {
       const expected = "Fizz";
-      const fizzTestCases = testCases.filter(
-        (num) => num !== 0 && num % 3 === 0 && num % 5 !== 0
-      );
+      const fizzTestCases = [6, 9, 12, 18, 21, 24, 27, 33, 36, 39, 42, 48];
 
       test.each(fizzTestCases)("input:%i", (testCase) => {
         // Arrange
@@ -145,13 +29,10 @@ describe("FizzBuzz", () => {
       });
     });
 
-    describe("output: Buzz - 5의 배수", () => {
+    describe("output: Buzz - 5의 배수이며 3의 배수, 소수가 아닌것", () => {
       const expected = "Buzz";
 
-      const buzzTestCases = testCases.filter(
-        (num) => num !== 0 && num % 5 === 0 && num % 3 !== 0
-      );
-
+      const buzzTestCases = [10, 20, 25, 35, 40, 50, 55, 65, 70, 80, 85, 95];
       test.each(buzzTestCases)("input:%i", (testCase) => {
         // Arrange
         num = testCase;
@@ -167,9 +48,10 @@ describe("FizzBuzz", () => {
     describe("output: FizzBuzz - 3과 5의 배수", () => {
       const expected = "FizzBuzz";
 
-      const fizzBuzzTestCases = testCases.filter(
-        (num) => num !== 0 && num % 5 === 0 && num % 3 === 0
-      );
+      const fizzBuzzTestCases = [
+        15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195,
+      ];
+
       test.each(fizzBuzzTestCases)("input:%i", (testCase) => {
         // Arrange
         num = testCase;
@@ -182,10 +64,53 @@ describe("FizzBuzz", () => {
       });
     });
 
+    describe("output: Whiz - 소수 이며 3과 5의 배수가 아닌것", () => {
+      const expected = "Whiz";
+      const whizTestCases = [2, 7, 11, 13, 17, 19];
+      test.each(whizTestCases)("input:%i", (testCase) => {
+        // Arrange
+        num = testCase;
+
+        // Act
+        const actual = fizzBuzz(num);
+
+        // Assert
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe("output: FizzWhiz - 3의 배수 이며 소수", () => {
+      const expected = "FizzWhiz";
+      const FizzWhiz = [3];
+      test.each(FizzWhiz)("input:%i", (testCase) => {
+        // Arrange
+        num = testCase;
+
+        // Act
+        const actual = fizzBuzz(num);
+
+        // Assert
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe("output: BuzzWhiz - 5의 배수 이며 소수", () => {
+      const expected = "BuzzWhiz";
+      const BuzzWhiz = [5];
+      test.each(BuzzWhiz)("input:%i", (testCase) => {
+        // Arrange
+        num = testCase;
+
+        // Act
+        const actual = fizzBuzz(num);
+
+        // Assert
+        expect(actual).toEqual(expected);
+      });
+    });
+
     describe("output: number - 그외", () => {
-      const otherTestCases = testCases.filter(
-        (num) => num !== 0 && num % 5 !== 0 && num % 3 !== 0
-      );
+      const otherTestCases = [1, 4, 8, 14, 16];
 
       test.each(otherTestCases)("input:%i", (testCase) => {
         // Arrange

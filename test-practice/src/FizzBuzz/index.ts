@@ -2,19 +2,35 @@ export type FizzBuzz = (num: number) => string | number;
 
 export type FizzBuzzFactory = () => FizzBuzz;
 
-export type FizzBuzzResult = "Fizz" | "Buzz" | "FizzBuzz" | number;
+export type FizzBuzzResult =
+  | "Fizz"
+  | "Buzz"
+  | "FizzBuzz"
+  | "Whiz"
+  | "FizzWhiz"
+  | "BuzzWhiz"
+  | number;
 
 const fizzBuzz: FizzBuzz = (num) => {
+  if (num === 3 && isPrime(num)) {
+    return "FizzWhiz";
+  }
+  if (num === 5 && isPrime(num)) {
+    return "BuzzWhiz";
+  }
+
   if (num % 3 === 0 && num % 5 === 0) {
     return "FizzBuzz";
   }
-  if (num % 3 === 0) {
+  if (num % 3 === 0 && !isPrime(num)) {
     return "Fizz";
   }
-  if (num % 5 === 0) {
+  if (num % 5 === 0 && !isPrime(num)) {
     return "Buzz";
   }
-
+  if (isPrime(num)) {
+    return "Whiz";
+  }
   return num;
 };
 
