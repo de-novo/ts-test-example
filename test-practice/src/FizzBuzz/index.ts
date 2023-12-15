@@ -1,10 +1,10 @@
-export type FizeBuzz = (num: number) => string | number;
+export type FizzBuzz = (num: number) => string | number;
 
-export type FizeBuzzFactory = () => FizeBuzz;
+export type FizzBuzzFactory = () => FizzBuzz;
 
-export type FizeBuzzResult = "Fizz" | "Buzz" | "FizzBuzz" | number;
+export type FizzBuzzResult = "Fizz" | "Buzz" | "FizzBuzz" | number;
 
-const fizeBuzz: FizeBuzz = (num) => {
+const fizzBuzz: FizzBuzz = (num) => {
   if (num % 3 === 0 && num % 5 === 0) {
     return "FizzBuzz";
   }
@@ -18,8 +18,19 @@ const fizeBuzz: FizeBuzz = (num) => {
   return num;
 };
 
-const fizeBuzzFactory: FizeBuzzFactory = () => {
-  return fizeBuzz;
+const fizzBuzzFactory: FizzBuzzFactory = () => {
+  return fizzBuzz;
 };
 
-export default fizeBuzzFactory;
+export default fizzBuzzFactory;
+
+export function isPrime(num: number): boolean {
+  //   if (num === 1) return false;
+  //   if (num === 2) return true;
+
+  //   for (let i = 2; i <= Math.floor(Math.sqrt(num)); i++) {
+  //     if (num % i === 0) return false;
+  //   }
+
+  return true;
+}
