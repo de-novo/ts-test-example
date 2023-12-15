@@ -136,4 +136,45 @@ describe("rock-scissor-paper", () => {
       });
     });
   });
+
+  describe("play each", () => {
+    describe("output: draw", () => {
+      test.each<[RockScissorPaperMove, RockScissorPaperMove]>([
+        ["paper", "paper"],
+        ["rock", "rock"],
+        ["scissor", "scissor"],
+      ])("player1 %s - player2 %s: draw", (player1, player2) => {
+        // Act
+        const actual = rockSissorPaperGame(player1, player2);
+        // Assert
+        expect(actual).toEqual("draw");
+      });
+    });
+
+    describe("output: player1 win", () => {
+      test.each<[RockScissorPaperMove, RockScissorPaperMove]>([
+        ["rock", "scissor"],
+        ["scissor", "paper"],
+        ["paper", "rock"],
+      ])("player1 %s - player2 %s: player1 win", (player1, player2) => {
+        // Act
+        const actual = rockSissorPaperGame(player1, player2);
+        // Assert
+        expect(actual).toEqual("player1 win");
+      });
+    });
+
+    describe("output: player1 lose", () => {
+      test.each<[RockScissorPaperMove, RockScissorPaperMove]>([
+        ["paper", "scissor"],
+        ["rock", "paper"],
+        ["scissor", "rock"],
+      ])("player1 %s - player2 %s: player1 lose", (player1, player2) => {
+        // Act
+        const actual = rockSissorPaperGame(player1, player2);
+        // Assert
+        expect(actual).toEqual("player1 lose");
+      });
+    });
+  });
 });
