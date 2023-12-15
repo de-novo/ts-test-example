@@ -1,5 +1,5 @@
-type RockScissorPaperMove = "rock" | "scissor" | "paper";
-type RockscissorPaperResult = "player1 win" | "player1 lose" | "draw";
+export type RockScissorPaperMove = "rock" | "scissor" | "paper";
+export type RockscissorPaperResult = "player1 win" | "player1 lose" | "draw";
 
 type RockScissorPaper = (
   player1: RockScissorPaperMove,
