@@ -8,18 +8,21 @@ export class StringCalculator implements StringCalculator {
       return 0;
     }
     const isCustomSplitter = input.startsWith("//");
+    const multiLineSplit = input.split("\n");
 
-    const customsplitter = isCustomSplitter
-      ? input.split("\n")[0].replace("//", "")
+    const splitter = isCustomSplitter
+      ? multiLineSplit[0].replace("//", "")
       : /,|:/;
 
     //  , or :
-    const numbers = isCustomSplitter
-      ? input
-          .split("\n")[1]
-          .split(customsplitter)
-          .map((number) => parseInt(number))
-      : input.split(customsplitter).map((number) => parseInt(number));
+    const numbers = (
+      isCustomSplitter
+        ? multiLineSplit
+            .slice(1)
+            .map((a) => a.split(splitter))
+            .flat()
+        : multiLineSplit.map((a) => a.split(splitter)).flat()
+    ).map((s) => parseInt(s));
 
     const result = numbers.reduce((acc, cur) => acc + cur, 0);
     if (isNaN(result)) {
