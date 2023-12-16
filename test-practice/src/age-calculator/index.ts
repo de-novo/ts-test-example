@@ -3,7 +3,38 @@
 export type AgeCalculator = (birthDate: Date, now: Date) => number;
 
 export const ageCalculator: AgeCalculator = (birthDate: Date, now: Date) => {
-  return 30;
+  const nowYear = now.getFullYear();
+  const nowMonth = now.getMonth();
+  const nowDate = now.getDate();
+
+  const birthYear = birthDate.getFullYear();
+  const birthMonth = birthDate.getMonth();
+  const birthDay = birthDate.getDate();
+
+  // 윤년 처리
+  if (nowMonth === 1 && nowDate === 29) {
+    if (birthMonth === 1 && birthDay === 28) {
+      return nowYear - birthYear;
+    }
+  }
+
+  if (nowMonth < birthMonth) {
+    return nowYear - birthYear - 1;
+  }
+
+  if (nowMonth > birthMonth) {
+    return nowYear - birthYear;
+  }
+
+  if (nowDate < birthDay) {
+    return nowYear - birthYear - 1;
+  }
+
+  if (nowDate > birthDay) {
+    return nowYear - birthYear;
+  }
+
+  return nowYear - birthYear;
 };
 
 export const createAgeCalculator = (): AgeCalculator => ageCalculator;
