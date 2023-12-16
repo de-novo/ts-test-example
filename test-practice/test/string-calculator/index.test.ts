@@ -51,13 +51,16 @@ describe("string calculator", () => {
         { input: "5", expected: 5 },
         { input: "10000", expected: 10000 },
       ];
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
 
     describe("3. 숫자 두개 이상을 쉼표(,) 구분자로 입력할 경우 두 숫자의 합을 반환한다.", () => {
@@ -73,13 +76,16 @@ describe("string calculator", () => {
         { input: "1,2,3,4,5,6,7,8,9,10", expected: 55 },
       ];
 
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
 
     describe("4. 구분자를 쉼표(,) 이외에 콜론(:)을 사용할 수 있다.", () => {
@@ -95,13 +101,16 @@ describe("string calculator", () => {
         { input: "1:2:3:4:5:6:7:8:9:10", expected: 55 },
       ];
 
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
 
     describe('5. "//"와 "\\n" 같이 문자 사이에 커스텀 구분자를 지정할 수 있다.', () => {
@@ -117,13 +126,16 @@ describe("string calculator", () => {
         { input: "//;\n1;2;3;4;5;6;7;8;9;10", expected: 55 },
       ];
 
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
 
     describe("6. 음수 또한 입력을 받을수 있다.", () => {
@@ -134,13 +146,16 @@ describe("string calculator", () => {
         { input: "-1,-2,-3,4", expected: -2 },
       ];
 
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
 
     describe("7. 숫자 이외의 값 또는 숫자가 아닌 문자열을 입력할 경우 에러를 반환해야 한다.", () => {
@@ -160,13 +175,16 @@ describe("string calculator", () => {
         },
       ];
 
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = () => calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = () => calculator.add(input);
 
-        // Assert
-        expect(result).toThrow(expected);
-      });
+          // Assert
+          expect(result).toThrow(expected);
+        }
+      );
     });
 
     describe("8. 숫자 입력을 '\\n'으로 구분할 수 있다.", () => {
@@ -175,13 +193,16 @@ describe("string calculator", () => {
         { input: "1\n2\n3", expected: 6 },
         { input: "1,2,3\n4,5,6", expected: 21 },
       ];
-      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
-        // Act
-        const result = calculator.add(input);
+      test.each(testCases)(
+        "input: $input => output: $expected",
+        ({ input, expected }) => {
+          // Act
+          const result = calculator.add(input);
 
-        // Assert
-        expect(result).toEqual(expected);
-      });
+          // Assert
+          expect(result).toEqual(expected);
+        }
+      );
     });
   });
 });
