@@ -2,7 +2,7 @@ import { AgeCalculator, createAgeCalculator } from "@src/age-calculator";
 
 describe("age-calculator", () => {
   let ageCalculator: AgeCalculator;
-  let now: Date | null;
+  let targetDate: Date | null;
   let birthDate: Date | null;
 
   // setup
@@ -12,18 +12,18 @@ describe("age-calculator", () => {
 
   // teardown
   afterEach(() => {
-    now = null;
+    targetDate = null;
     birthDate = null;
   });
 
   describe("calculateAge", () => {
-    it("now: 2020-01-01, birthDate: 1990-01-01 :: age 30", () => {
+    it("targetDate: 2020-01-01, birthDate: 1990-01-01 :: age 30", () => {
       // Arrange
-      now = new Date("2020-01-01");
+      targetDate = new Date("2020-01-01");
       birthDate = new Date("1990-01-01");
 
       // Act
-      const age = ageCalculator(birthDate, now);
+      const age = ageCalculator(birthDate, targetDate);
       // Assert
       expect(age).toBe(30);
     });
@@ -32,7 +32,7 @@ describe("age-calculator", () => {
   describe("calculateAge each", () => {
     describe("same month", () => {
       const testCases = [
-        // now, birthDate, expected
+        // target, birthDate, expected
         ["2020-01-01", "2020-01-01", 0],
         ["2020-01-01", "1990-01-01", 30],
         ["2020-01-01", "1990-01-02", 29],
@@ -43,14 +43,14 @@ describe("age-calculator", () => {
       ];
 
       test.each(testCases)(
-        "now: %s, birthDate: %s :: age %i",
-        (nowStr, birthDateStr, expected) => {
+        "targetDate: %s, birthDate: %s :: age %i",
+        (targetDateStr, birthDateStr, expected) => {
           // Arrange
-          now = new Date(nowStr);
+          targetDate = new Date(targetDateStr);
           birthDate = new Date(birthDateStr);
 
           // Act
-          const age = ageCalculator(birthDate, now);
+          const age = ageCalculator(birthDate, targetDate);
           // Assert
           expect(age).toBe(expected);
         }
@@ -65,14 +65,14 @@ describe("age-calculator", () => {
         ["2020-01-01", "1990-02-01", 29],
       ];
       test.each(testCases)(
-        "now: %s, birthDate: %s :: age %i",
-        (nowStr, birthDateStr, expected) => {
+        "targetDate: %s, birthDate: %s :: age %i",
+        (targetDateStr, birthDateStr, expected) => {
           // Arrange
-          now = new Date(nowStr);
+          targetDate = new Date(targetDateStr);
           birthDate = new Date(birthDateStr);
 
           // Act
-          const age = ageCalculator(birthDate, now);
+          const age = ageCalculator(birthDate, targetDate);
           // Assert
           expect(age).toBe(expected);
         }
@@ -80,7 +80,7 @@ describe("age-calculator", () => {
     });
     describe("random tests", () => {
       const testCases = [
-        // now, birthDate, expected
+        // targetDate, birthDate, expected
         ["2020-01-01", "1990-01-01", 30],
         ["2020-01-01", "1990-01-02", 29],
         ["2020-01-01", "1990-02-01", 29],
@@ -99,14 +99,14 @@ describe("age-calculator", () => {
       ];
 
       test.each(testCases)(
-        "now: %s, birthDate: %s :: age %i",
-        (nowStr, birthDateStr, expected) => {
+        "targetDate: %s, birthDate: %s :: age %i",
+        (targetDateStr, birthDateStr, expected) => {
           // Arrange
-          now = new Date(nowStr);
+          targetDate = new Date(targetDateStr);
           birthDate = new Date(birthDateStr);
 
           // Act
-          const age = ageCalculator(birthDate, now);
+          const age = ageCalculator(birthDate, targetDate);
           // Assert
           expect(age).toBe(expected);
         }
