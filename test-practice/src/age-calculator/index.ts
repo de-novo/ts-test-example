@@ -11,30 +11,16 @@ export const ageCalculator: AgeCalculator = (birthDate: Date, now: Date) => {
   const birthMonth = birthDate.getMonth();
   const birthDay = birthDate.getDate();
 
+  const age = nowYear - birthYear;
   // 윤년 처리
-  if (nowMonth === 1 && nowDate === 29) {
-    if (birthMonth === 1 && birthDay === 28) {
-      return nowYear - birthYear;
-    }
+  if (
+    nowMonth < birthMonth ||
+    (nowMonth === birthMonth && nowDate < birthDay)
+  ) {
+    return age - 1;
   }
 
-  if (nowMonth < birthMonth) {
-    return nowYear - birthYear - 1;
-  }
-
-  if (nowMonth > birthMonth) {
-    return nowYear - birthYear;
-  }
-
-  if (nowDate < birthDay) {
-    return nowYear - birthYear - 1;
-  }
-
-  if (nowDate > birthDay) {
-    return nowYear - birthYear;
-  }
-
-  return nowYear - birthYear;
+  return age;
 };
 
 export const createAgeCalculator = (): AgeCalculator => ageCalculator;
