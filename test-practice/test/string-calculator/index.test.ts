@@ -13,6 +13,8 @@
  * 7. 숫자 이외의 값 또는 숫자가 아닌 문자열을 입력할 경우 에러를 반환해야 한다.
  *   - 에러 메시지: "문자열에 숫자 이외의 값이 포함되어 있습니다."
  *
+ * 8. 숫자 입력을 '\n'으로 구분할 수 있다.
+ *    - 즉, '1,2,3\n4,5,6'과 같은 입력이 가능해야 한다.
  */
 
 import { StringCalculator } from "@src/string-calculator";
@@ -38,6 +40,7 @@ describe("string calculator", () => {
         expect(result).toEqual(expected);
       });
     });
+
     describe("2. 숫자 하나를 문자열로 입력할 경우 해당 숫자를 반환한다.", () => {
       const testCases = [
         { input: "0", expected: 0 },
@@ -56,6 +59,7 @@ describe("string calculator", () => {
         expect(result).toEqual(expected);
       });
     });
+
     describe("3. 숫자 두개 이상을 쉼표(,) 구분자로 입력할 경우 두 숫자의 합을 반환한다.", () => {
       const testCases = [
         { input: "1,2", expected: 3 },
@@ -77,6 +81,7 @@ describe("string calculator", () => {
         expect(result).toEqual(expected);
       });
     });
+
     describe("4. 구분자를 쉼표(,) 이외에 콜론(:)을 사용할 수 있다.", () => {
       const testCases = [
         { input: "1:2", expected: 3 },
@@ -98,6 +103,7 @@ describe("string calculator", () => {
         expect(result).toEqual(expected);
       });
     });
+
     describe('5. "//"와 "\\n" 같이 문자 사이에 커스텀 구분자를 지정할 수 있다.', () => {
       const testCases = [
         { input: "//;\n1;2", expected: 3 },
@@ -136,6 +142,7 @@ describe("string calculator", () => {
         expect(result).toEqual(expected);
       });
     });
+
     describe("7. 숫자 이외의 값 또는 숫자가 아닌 문자열을 입력할 경우 에러를 반환해야 한다.", () => {
       const err = new Error("문자열에 숫자 이외의 값이 포함되어 있습니다.");
       const testCases = [
@@ -159,6 +166,21 @@ describe("string calculator", () => {
 
         // Assert
         expect(result).toThrow(expected);
+      });
+    });
+
+    describe("8. 숫자 입력을 '\\n'으로 구분할 수 있다.", () => {
+      const testCases = [
+        { input: "1\n2,3", expected: 6 },
+        { input: "1\n2\n3", expected: 6 },
+        { input: "1,2,3\n4,5,6", expected: 21 },
+      ];
+      test.each(testCases)("input: %s => output: %d", ({ input, expected }) => {
+        // Act
+        const result = calculator.add(input);
+
+        // Assert
+        expect(result).toEqual(expected);
       });
     });
   });
