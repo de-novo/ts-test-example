@@ -1,0 +1,92 @@
+/// 미니 프로젝트로써 어디서든 사용할 수 있는 회원을 주로 다룸
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//--------------------------------------
+// 1. 회원 관리
+//--------------------------------------
+/// User : 접속 단위
+model user {
+  id String @id @db.Uuid
+  ip String @db.VarChar
+
+  member_id String? @db.Uuid
+  member_social_id String? @db.Uuid
+   
+  created_at DateTime @default(now()) @db.Timestamptz
+  updated_at DateTime @updatedAt @db.Timestamptz
+
+  ///-------
+  /// RELATION
+  ///-------
+  member member? @relation(fields: [member_id], references: [id])
+  @@index([created_at])
+  @@index([ip])
+  @@map("user")
+}
+
+/// Member : 회원 단위 [가입]
+model member {
+  id String @id @default(uuid())
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  ///-------
+  /// RELATION
+  ///-------
+  user user[]
+  member_social member_social[]
+}
+
+model member_social {
+  id String @id @db.Uuid
+
+  /// 소셜 타입 (kakao, naver, google, facebook, git, linkedIn.......)
+  social_type String @db.VarChar
+
+  /// 외부 소셜 아이디
+  uid String @db.VarChar
+
+  /// 외부 시스템 닉네임
+  nickname String @db.VarChar
+
+  /// 외부 시스템 패스워드 (암호화) 
+  /// 외부시스템에서 제공하는 패스워드
+  /// 로그인시 사용하는 개인용 패스워드가 아님
+  password String @db.VarChar
+
+  /// 회원 아이디
+  member_id String @db.VarChar
+
+  /// 최초 로그인 시간
+  created_at DateTime
+
+
+  ///-------
+  /// RELATION
+  ///-------
+  member member? @relation(fields: [member_id], references: [id])
+
+  @@unique([social_type,uid])
+  @@unique([social_type,nickname])
+  @@index([social_type,created_at])
+  @@index([uid])
+}
+
+/// 회원 프로필
+model member_citizen {
+  id   String @id @default(uuid())
+  name String @db.VarChar
+  mobile String @db.VarChar
+ 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
