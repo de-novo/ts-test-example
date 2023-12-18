@@ -1,4 +1,10 @@
 import { CsvFileWriter, Fs } from "@src/csv-file-writer";
+import {
+  CsvWriterAssert,
+  User,
+  csvWriterAssertFactory,
+  testCaseFactory,
+} from "./test-helper";
 
 /**
  * csv file writer
@@ -29,6 +35,7 @@ import { CsvFileWriter, Fs } from "@src/csv-file-writer";
 describe("csv file writer", () => {
   let fs: Fs;
   let csvFileWriter: CsvFileWriter;
+  let csvWriterAssert: CsvWriterAssert;
   type TestCase<T extends object> = {
     _test: string;
     data: T[];
@@ -41,6 +48,7 @@ describe("csv file writer", () => {
     fs = {
       writeFileSync: jest.fn(),
     };
+    csvWriterAssert = csvWriterAssertFactory(fs);
     csvFileWriter = new CsvFileWriter(fs);
   });
 
@@ -49,7 +57,7 @@ describe("csv file writer", () => {
   });
 
   describe("test users", () => {
-    const users = testObjFactory().createUsers(3);
+    const users = testCaseFactory().createUsers(3);
     const testCases: TestCase<User>[] = [
       {
         _test: "users without headers",
@@ -80,7 +88,8 @@ describe("csv file writer", () => {
       // Act
       csvFileWriter.writeCsvFile("test.csv", data, headers);
       // Assert
-      expect(fs.writeFileSync).toHaveBeenCalledWith("test.csv", expected);
+      csvWriterAssert.assertNumberOfWritten(1);
+      csvWriterAssert.assertWritten("test.csv", expected);
     });
   });
 
@@ -102,9 +111,11 @@ describe("csv file writer", () => {
       const headers: (keyof User)[] | undefined = undefined;
       // Act
       // Assert
-      expect(() =>
-        csvFileWriter.writeCsvFile("test.csv", data, headers)
-      ).toThrow("data is empty");
+
+      csvWriterAssert.assertThrownError(
+        () => csvFileWriter.writeCsvFile("test.csv", data, headers),
+        "data is empty"
+      );
     });
 
     it("should throw error when data empty and header is null", () => {
@@ -113,9 +124,10 @@ describe("csv file writer", () => {
       const headers: (keyof User)[] | null = null;
       // Act
       // Assert
-      expect(() =>
-        csvFileWriter.writeCsvFile("test.csv", data, headers!)
-      ).toThrow("data is empty");
+      csvWriterAssert.assertThrownError(
+        () => csvFileWriter.writeCsvFile("test.csv", data, headers!),
+        "data is empty"
+      );
     });
 
     it("should throw error when data empty and header is empty", () => {
@@ -124,41 +136,10 @@ describe("csv file writer", () => {
       const headers: (keyof User)[] = [];
       // Act
       // Assert
-      expect(() =>
-        csvFileWriter.writeCsvFile("test.csv", data, headers)
-      ).toThrow("data is empty");
+      csvWriterAssert.assertThrownError(
+        () => csvFileWriter.writeCsvFile("test.csv", data, headers),
+        "data is empty"
+      );
     });
   });
 });
-interface User {
-  _id: string;
-  name: string;
-  age: number;
-}
-
-interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  userId: string;
-}
-
-function createUsers(num: number): User[] {
-  return Array.from({ length: num }, (_, i) => ({
-    _id: `${i}`,
-    name: `name${i}`,
-    age: i,
-  }));
-}
-function createPosts(num: number): Post[] {
-  return Array.from({ length: num }, (_, i) => ({
-    _id: `${i}`,
-    title: `title${i}`,
-    content: `content${i}`,
-    userId: `${i}`,
-  }));
-}
-
-function testObjFactory() {
-  return { createUsers, createPosts };
-}

@@ -13,15 +13,41 @@ export class CsvFileWriter {
     headers?: (keyof T)[]
   ): void {
     if (data.length === 0) throw new Error("data is empty");
-
-    const header = headers ?? Object.keys(data[0]);
-
-    const headerString = header.join(",");
+    const csvString = this.dataToCsvString(data, headers);
+    this.fs.writeFileSync(path, csvString);
+  }
+  dataToCsvString<T extends object>(data: T[], headers?: (keyof T)[]) {
+    const _headers = headers ?? (Object.keys(data[0]) as (keyof T)[]);
+    const headerString = _headers.join(",");
     const dataString = data
-      .map((d) => header.map((h) => d[h]).join(","))
+      .map((d) => _headers.map((h) => d[h]).join(","))
       .join("\n");
     const csvString = `${headerString}\n${dataString}`;
+    return csvString;
+  }
+}
 
-    this.fs.writeFileSync(path, csvString);
+export class CsvFileWriterBatch {
+  constructor(
+    private readonly csvFileWriter: CsvFileWriter,
+    private readonly batchSize: number = 1000
+  ) {}
+
+  writeCsvFile<T extends object>(
+    path: string,
+    data: T[],
+    headers?: (keyof T)[]
+  ) {
+    const batchCount = Math.ceil(data.length / this.batchSize);
+    const batchData = Array.from({ length: batchCount }, (_, i) => {
+      const start = i * this.batchSize;
+      const end = start + this.batchSize;
+      return data.slice(start, end);
+    });
+
+    batchData.forEach((d, i) => {
+      const fileName = `${path.split(".")[0]}_${i + 1}.csv`;
+      this.csvFileWriter.writeCsvFile(fileName, d, headers);
+    });
   }
 }
