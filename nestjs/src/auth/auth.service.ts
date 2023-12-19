@@ -39,6 +39,23 @@ export class AuthService {
     return result;
   }
 
+  async sendEmailVerification(
+    email: string,
+    // _type: 'SINGUP' | 'RESET_PASSWORD',
+  ) {
+    const exist = await this.prisma.members.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!exist) {
+      throw new Error('가입되지 않은 이메일입니다.');
+    }
+
+    return 'SUCCESS';
+  }
+
   async hashPassword(password: string) {
     const salt = await bcrypt.genSalt(await this.configService.get('hashSalt'));
     return await bcrypt.hash(password, salt);

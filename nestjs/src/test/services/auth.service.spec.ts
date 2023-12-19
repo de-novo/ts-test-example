@@ -70,7 +70,13 @@ describe('auth service', () => {
       const actual = await authService.signup(mockData);
       // Assert
 
+      //유저 생성 함수가 호출되었는지 확인
       expect(mockPrisma.members.create).toHaveBeenCalledTimes(1);
+
+      //기존 비밀번호와 다른지 확인
+      expect(actual.password).not.toBe(mockData.password);
+
+      // 새로운 유저를 반환하는지 확인
       expect(actual).toMatchObject({
         id: expect.any(String),
         email: mockData.email,
@@ -97,6 +103,10 @@ describe('auth service', () => {
       expect(async () => await authService.signup(mockData)).rejects.toThrow(
         '이미 가입된 이메일입니다.',
       );
+
+      // 유저 조회 함수가 호출되었는지 확인 -> 유효성 검증
+      expect(mockPrisma.members.findUnique).toHaveBeenCalledTimes(1);
+      // 멤버 생성함수는 호출되면 안됨
       expect(mockPrisma.members.create).toHaveBeenCalledTimes(0);
     });
   });

@@ -1,5 +1,5 @@
 import { TypedRoute } from '@nestia/core';
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +41,11 @@ export class AuthController {
 
   @TypedRoute.Post('/email/verify')
   async verifyEmail() {
+    return 'OK';
+  }
+  @Get('/google/oauth2callback')
+  async googleOauth2callback(@Query() code: { code: string }) {
+    console.log(code, '/google/oauth2callback');
     return 'OK';
   }
 }
