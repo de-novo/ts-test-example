@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 async function bootstrap() {
-  const port = process.env.PORT || 8000;
+  const port = process.env.PORT || 3000;
 
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
@@ -12,10 +12,11 @@ async function bootstrap() {
     prefix: 'v',
   });
   const docs = await import('../../packages/api/swagger.json' as any);
-  docs.servers = [
-    { url: `http://localhost:${port}`, description: 'Local Server' },
-  ];
-  SwaggerModule.setup('docs', app, docs);
+
+  SwaggerModule.setup('docs', app, {
+    ...docs,
+    servers: [{ url: `http://localhost:${port}`, description: 'Local Server' }],
+  });
   await app.listen(port);
 }
 bootstrap();
