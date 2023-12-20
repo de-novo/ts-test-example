@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { MailService } from '@src/common/mail/mail.service';
 import { PrismaService } from '@src/common/prisma/prisma.service';
 import { Auth } from '@src/type/auth.type';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
   async login() {
@@ -36,6 +38,8 @@ export class AuthService {
         password: hashedPassword,
       },
     });
+
+    this.sendEmailVerification(email);
     return result;
   }
 
