@@ -1,6 +1,8 @@
 import { TypedBody, TypedRoute } from '@nestia/core';
 import { Controller, Get, Query } from '@nestjs/common';
 import { AuthService } from '@src//auth/auth.service';
+import { createResponse, isError, throwError } from '@src/type';
+
 import { Auth } from '@src/type/auth.type';
 
 @Controller('auth')
@@ -25,8 +27,12 @@ export class AuthController {
   @TypedRoute.Post('/signup')
   async signup(@TypedBody() signupDTO: Auth.RequestDTO.Signup) {
     const result = await this.authService.signup(signupDTO);
-    return result;
+    if (isError(result)) {
+      return throwError(result);
+    }
+    return createResponse(result);
   }
+
   @TypedRoute.Patch('/password')
   async changePassword() {
     return 'OK';
@@ -37,15 +43,20 @@ export class AuthController {
     return 'OK';
   }
 
-  @TypedRoute.Post('/email/verify')
+  @TypedRoute.Post('/email/verification')
   async sendVerifyEmail() {
     return 'OK';
   }
 
-  @TypedRoute.Post('/email/verify')
-  async verifyEmail() {
-    return 'OK';
+  @TypedRoute.Patch('/email/verification')
+  async verifyEmail(@TypedBody() verifyEmailDTO: Auth.RequestDTO.VerifyEmail) {
+    const result = await this.authService.verifyEmail(verifyEmailDTO);
+    if (isError(result)) {
+      return throwError(result);
+    }
+    return createResponse(result);
   }
+
   @Get('/google/oauth2callback')
   async googleOauth2callback(@Query() code: { code: string }) {
     console.log(code, '/google/oauth2callback');
