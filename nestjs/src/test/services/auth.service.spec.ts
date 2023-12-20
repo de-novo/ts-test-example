@@ -1,16 +1,18 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, members, verification_codes } from '@prisma/client';
+import { AuthService } from '@src/auth/auth.service';
 import { MailService } from '@src/common/mail/mail.service';
+import * as template from '@src/common/mail/template/signup.template';
 import { PrismaService } from '@src/common/prisma/prisma.service';
 import { Auth } from '@src/type/auth.type';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { AuthService } from './../../auth/auth.service';
+import typia from 'typia';
 import { commonHelper } from './common/helper';
 describe('auth service', () => {
   let authService: AuthService;
   let mockPrisma: DeepMockProxy<PrismaClient>;
-  // let mockMailService: MailService;
+  let mockMailService: MailService;
   // Arrange
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -25,7 +27,14 @@ describe('auth service', () => {
 
     authService = app.get<AuthService>(AuthService);
     mockPrisma = app.get(PrismaService);
-    // mockMailService = app.get(MailService);
+    mockMailService = app.get(MailService);
+    jest.mock('@src/common/mail/template/signup.template', () => ({
+      signupMailTemplate: jest.fn().mockReturnValue({
+        subject: 'test',
+        text: 'test',
+        html: '<h1>test</h1>',
+      }),
+    }));
   });
 
   // teardown
@@ -126,6 +135,74 @@ describe('auth service', () => {
       expect(mockPrisma.members.create).toHaveBeenCalledTimes(0);
       // 이메일 인증 함수 호출 x
       expect(authService.sendEmailVerification).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('sendEmailVerification', () => {
+    const mockEmail = 'test123@test.test';
+
+    beforeEach(() => {
+      mockPrisma.members.findUnique.mockResolvedValue({
+        ...typia.random<members>(),
+        email: mockEmail,
+      });
+    });
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('SUCCESS: 이메일 전송 성공', async () => {
+      // Arrange
+      authService.randomDigit = jest.fn().mockReturnValue('123456');
+      jest.spyOn(template, 'signupMailTemplate').mockReturnValue({
+        subject: 'test',
+        html: '<h1>test</h1>',
+      });
+      mockPrisma.verification_codes.create.mockResolvedValue({
+        ...typia.random<verification_codes>(),
+        code: '123456',
+        verified_at: null,
+      });
+      const sendWithExpect = {
+        to: mockEmail,
+        subject: 'test',
+        text: expect.any(String),
+        html: '<h1>test</h1>',
+      };
+
+      // Act
+      const actual = await authService.sendEmailVerification(mockEmail);
+      // Assert
+      expect(actual).toBe('SUCCESS');
+      expect(mockPrisma.members.findUnique).toHaveBeenCalledTimes(1);
+      // 인증번호 생성이 한번만 호출되었는지 확인
+      expect(authService.randomDigit).toHaveBeenCalledTimes(1);
+      expect(template.signupMailTemplate).toHaveBeenCalledTimes(1);
+      expect(template.signupMailTemplate).toHaveBeenCalledWith(
+        mockEmail,
+        '123456',
+      );
+      expect(mockPrisma.verification_codes.create).toHaveBeenCalledTimes(1);
+      expect(mockMailService.send).toHaveBeenCalledTimes(1);
+      expect(mockMailService.send).toHaveBeenCalledWith(sendWithExpect);
+    });
+
+    it('ERROR: 가입되지 않은 이메일', async () => {
+      // Arrange
+      jest.spyOn(template, 'signupMailTemplate').mockReturnValue({
+        subject: 'test',
+        html: '<h1>test</h1>',
+      });
+      mockPrisma.members.findUnique.mockResolvedValue(null);
+      // Act
+      // Assert
+      expect(
+        async () => await authService.sendEmailVerification(mockEmail),
+      ).rejects.toThrow('가입되지 않은 이메일입니다.');
+
+      expect(mockPrisma.members.findUnique).toHaveBeenCalledTimes(1);
+      expect(mockMailService.send).toHaveBeenCalledTimes(0);
+      expect(template.signupMailTemplate).toHaveBeenCalledTimes(0);
     });
   });
 

@@ -1,20 +1,32 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { members } from '@prisma/client';
 import { AuthController } from '@src/auth/auth.controller';
+import { AuthService } from '@src/auth/auth.service';
+import { mockDeep } from 'jest-mock-extended';
+import typia from 'typia';
 // ----------------------------------------
 // auth controller
 // ----------------------------------------
 describe('auth controller: default /auth', () => {
   let authController: AuthController;
-
+  let authService: AuthService;
   // Arrange
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
+      providers: [AuthService],
       controllers: [AuthController],
-    }).compile();
+    })
+      .overrideProvider(AuthService)
+      .useValue(mockDeep<AuthService>())
+      .compile();
 
     authController = app.get<AuthController>(AuthController);
+    authService = app.get(AuthService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   /**
    * ========================================
    * /auth
@@ -77,13 +89,20 @@ describe('auth controller: default /auth', () => {
       describe('try signup', () => {
         it('should return "OK"', async () => {
           // Arrange
-          const expected = 'OK';
+          const expected = typia.random<members>();
+          authService.signup = jest.fn().mockResolvedValue(expected);
+          const signupDTO = {
+            email: 'test@test.test',
+            password: 'test1234',
+          };
 
           // Act
-          const actual = await authController.signup();
+          const actual = await authController.signup(signupDTO);
 
           // Assert
           expect(actual).toBe(expected);
+          expect(authService.signup).toHaveBeenCalledTimes(1);
+          expect(authService.signup).toHaveBeenCalledWith(signupDTO);
         });
       });
     });

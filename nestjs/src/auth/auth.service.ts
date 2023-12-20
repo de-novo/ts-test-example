@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '@src/common/mail/mail.service';
+import { signupMailTemplate } from '@src/common/mail/template/signup.template';
 import { PrismaService } from '@src/common/prisma/prisma.service';
 import { Auth } from '@src/type/auth.type';
 import * as bcrypt from 'bcrypt';
@@ -56,7 +57,25 @@ export class AuthService {
     if (!exist) {
       throw new Error('가입되지 않은 이메일입니다.');
     }
+    const verifyNumber = this.randomDigit(6);
+    const { id: member_id } = exist;
+    const id = v4();
+    const { code } = await this.prisma.verification_codes.create({
+      data: {
+        id,
+        member_id,
+        code: verifyNumber,
+        target: 'EMAIL',
+        // 5분 뒤에 만료
+        expired_at: new Date(Date.now() + 1000 * 60 * 5),
+      },
+    });
 
+    this.mailService.send({
+      ...signupMailTemplate(email, code),
+      text: '인증번호: ' + code,
+      to: email,
+    });
     return 'SUCCESS';
   }
 

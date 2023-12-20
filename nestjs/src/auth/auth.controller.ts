@@ -1,9 +1,11 @@
-import { TypedRoute } from '@nestia/core';
+import { TypedBody, TypedRoute } from '@nestia/core';
 import { Controller, Get, Query } from '@nestjs/common';
+import { AuthService } from '@src//auth/auth.service';
+import { Auth } from '@src/type/auth.type';
 
 @Controller('auth')
 export class AuthController {
-  constructor() {}
+  constructor(private readonly authService: AuthService) {}
 
   @TypedRoute.Get('/')
   async getAuth() {
@@ -21,8 +23,9 @@ export class AuthController {
   }
 
   @TypedRoute.Post('/signup')
-  async signup() {
-    return 'OK';
+  async signup(@TypedBody() signupDTO: Auth.RequestDTO.Signup) {
+    const result = await this.authService.signup(signupDTO);
+    return result;
   }
   @TypedRoute.Patch('/password')
   async changePassword() {

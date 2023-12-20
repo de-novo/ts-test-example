@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './common/mail/mail.module';
 import { MailService } from './common/mail/mail.service';
+import { PrismaModule } from './common/prisma/prisma.module';
 import config, { configValidationSchema } from './config';
 import { V1Module } from './v1/v1.module';
 
@@ -19,6 +20,7 @@ import { V1Module } from './v1/v1.module';
       validationSchema: configValidationSchema,
     }),
     MailModule,
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],
