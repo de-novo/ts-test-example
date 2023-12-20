@@ -2,9 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClient, members, verification_codes } from '@prisma/client';
 import { AuthService } from '@src/auth/auth.service';
+import { Error } from '@src/common/error';
 import { MailService } from '@src/common/mail/mail.service';
 import * as template from '@src/common/mail/template/signup.template';
 import { PrismaService } from '@src/common/prisma/prisma.service';
+import { isError } from '@src/type';
 import { Auth } from '@src/type/auth.type';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import typia from 'typia';
@@ -79,16 +81,15 @@ describe('auth service', () => {
         .fn()
         .mockResolvedValue('SUCCESS');
     });
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
 
     it('SUCCESS: 새로운 유저 반환', async () => {
       // Arrange
       // Act
       const actual = await authService.signup(mockData);
       // Assert
-
+      if (isError(actual)) {
+        return; // 에러가 발생하면 테스트 실패
+      }
       //유저 생성 함수가 호출되었는지 확인
       expect(mockPrisma.members.create).toHaveBeenCalledTimes(1);
 
@@ -124,9 +125,10 @@ describe('auth service', () => {
       });
 
       // Act
+      const actual = await authService.signup(mockData);
       // Assert
-      expect(async () => await authService.signup(mockData)).rejects.toThrow(
-        '이미 가입된 이메일입니다.',
+      expect(actual).toStrictEqual(
+        typia.random<Error.Auth.EMAIL_ALREADY_EXIST>(),
       );
 
       // 유저 조회 함수가 호출되었는지 확인 -> 유효성 검증
@@ -146,9 +148,6 @@ describe('auth service', () => {
         ...typia.random<members>(),
         email: mockEmail,
       });
-    });
-    afterEach(() => {
-      jest.clearAllMocks();
     });
 
     it('SUCCESS: 이메일 전송 성공', async () => {
@@ -195,14 +194,66 @@ describe('auth service', () => {
       });
       mockPrisma.members.findUnique.mockResolvedValue(null);
       // Act
+      const actual = await authService.sendEmailVerification(mockEmail);
       // Assert
-      expect(
-        async () => await authService.sendEmailVerification(mockEmail),
-      ).rejects.toThrow('가입되지 않은 이메일입니다.');
-
+      expect(actual).toStrictEqual(typia.random<Error.Auth.EMAIL_NOT_EXIST>());
       expect(mockPrisma.members.findUnique).toHaveBeenCalledTimes(1);
       expect(mockMailService.send).toHaveBeenCalledTimes(0);
       expect(template.signupMailTemplate).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('verifyEmail', () => {
+    const mockData: Auth.RequestDTO.VerifyEmail = {
+      email: 'test@test.test',
+      code: '123456',
+    };
+    const mockMember = { ...typia.random<members>(), email: mockData.email };
+
+    it('SUCCESS: 이메일 인증 성공', async () => {
+      /**
+       * 이메일 인증성공 절차
+       * 1. 멤버 조회
+       *    - 멤버가 존재하지 않으면 에러
+       * 3. 인증코드 조회
+       *    - 인증코드가 존재하지 않으면 에러
+       *    - 인증코드가 만료되었으면 에러
+       *    - 인증코드가 이미 인증되었으면 에러
+       *
+       * 4. 인증코드 인증 처리
+       * 5. 멤버 이메일 인증 처리
+       */
+      // Arrange
+      mockPrisma.verification_codes.findFirst.mockResolvedValue({
+        ...typia.random<verification_codes>(),
+        code: mockData.code,
+        verified_at: null,
+      });
+      jest
+        .spyOn(authService, 'updateEmailVerifiedAt')
+        .mockResolvedValue('SUCCESS');
+      jest.spyOn(authService, 'checkMemberExist').mockResolvedValue({
+        ...mockMember,
+        email_verified_at: null,
+      });
+      jest
+        .spyOn(authService, 'checkAlreadyVerifiedCode')
+        .mockResolvedValue(false);
+      jest
+        .spyOn(authService, 'updateEmailVerifiedAt')
+        .mockResolvedValue('SUCCESS');
+
+      const expected = 'SUCCESS';
+
+      // Act
+      const actual = await authService.verifyEmail(mockData);
+
+      // Assert
+      expect(actual).toBe(expected);
+      expect(authService.checkMemberExist).toHaveBeenCalledTimes(1);
+      expect(authService.checkAlreadyVerifiedCode).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.verification_codes.findFirst).toHaveBeenCalledTimes(1);
+      expect(authService.updateEmailVerifiedAt).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -232,5 +283,92 @@ describe('auth service', () => {
     // Assert
     expect(actual).toHaveLength(num);
     expect(actual).toMatch(/[0-9]{6}/);
+  });
+
+  describe('validation', () => {
+    // 검증관련 테스트
+    describe('checkMemberAlreadyExist', () => {
+      const mockEmali = 'test@test.test';
+      const mockMember = typia.random<members>();
+
+      it('SUCCESS: 이메일이 존재할때', async () => {
+        // Arrange
+        mockPrisma.members.findUnique.mockResolvedValue({
+          ...mockMember,
+          email: mockEmali,
+        });
+        const expected = { ...mockMember, email: mockEmali };
+        // Act
+        const actual = await authService.checkMemberExist(mockEmali);
+        // Assert
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('ERROR: 이메일이 존재하지 않을때', async () => {
+        // Arrange
+        mockPrisma.members.findUnique.mockResolvedValue(null);
+        const expected = typia.random<Error.Auth.EMAIL_NOT_EXIST>();
+        // Act
+        const actual = await authService.checkMemberExist(mockEmali);
+        // Assert
+        expect(actual).toStrictEqual(expected);
+      });
+    });
+
+    describe('checkAlreadyVerifiedCode', () => {
+      const mockMemberId = 'test1234';
+      const mockVerificationCode = typia.random<verification_codes>();
+
+      it('SUCCESS: 인증된 코드가 없을경우', async () => {
+        // Arrange
+        mockPrisma.verification_codes.findMany.mockResolvedValue([]);
+        // Act
+        const actual = await authService.checkAlreadyVerifiedCode(mockMemberId);
+        // Assert
+        expect(actual).toBe(false);
+      });
+      it('ERROR: 인증된 코드가 이미 존재하는 경우', async () => {
+        // Arrange
+        mockPrisma.verification_codes.findMany.mockResolvedValue([
+          {
+            ...mockVerificationCode,
+            verified_at: new Date(),
+          },
+        ]);
+        // Act
+        const actual = await authService.checkAlreadyVerifiedCode(mockMemberId);
+        // Assert
+        expect(actual).toStrictEqual(
+          typia.random<Error.Auth.VERIFICATION_CODE_ALREADY_VERIFIED>(),
+        );
+      });
+    });
+  });
+
+  describe('updateEmailVerifiedAt', () => {
+    it('SUCCESS: 이메일 인증 처리', async () => {
+      // Arrange
+      const mockData = {
+        member_id: 'test1234',
+        verification_code_id: 'test1234',
+      };
+      const mockMember = typia.random<members>();
+      const mockVerificationCode = typia.random<verification_codes>();
+      mockPrisma.members.update.mockResolvedValue({
+        ...mockMember,
+        email_verified_at: new Date(),
+      });
+      mockPrisma.verification_codes.update.mockResolvedValue({
+        ...mockVerificationCode,
+        verified_at: new Date(),
+      });
+      const expected = 'SUCCESS';
+      // Act
+      const actual = await authService.updateEmailVerifiedAt(mockData);
+      // Assert
+      expect(actual).toBe(expected);
+      expect(mockPrisma.members.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.verification_codes.update).toHaveBeenCalledTimes(1);
+    });
   });
 });

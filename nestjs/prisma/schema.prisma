@@ -18,9 +18,9 @@ model users {
   id String @id @db.Uuid
   ip String @db.VarChar
 
-  member_id String? @db.Uuid
+  member_id        String? @db.Uuid
   member_social_id String? @db.Uuid
-   
+
   created_at DateTime @default(now()) @db.Timestamptz
   updated_at DateTime @updatedAt @db.Timestamptz
 
@@ -28,6 +28,7 @@ model users {
   /// RELATION
   ///-------
   member members? @relation(fields: [member_id], references: [id])
+
   @@index([created_at])
   @@index([ip])
   @@map("user")
@@ -35,34 +36,34 @@ model users {
 
 /// Member : 회원 단위 [가입]
 model members {
-  id String @id @db.Uuid
-  email String @db.VarChar
-  password String @db.VarChar  
+  id       String @id @db.Uuid
+  email    String @db.VarChar
+  password String @db.VarChar
 
   /// 회원 인증 상태
-  email_verified_at DateTime?
+  email_verified_at  DateTime?
   mobile_verified_at DateTime?
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  deleted_at DateTime? /// 회원 탈퇴 시간
-  status Status @default(ACTIVE)
+  created_at               DateTime                   @default(now())
+  updated_at               DateTime                   @updatedAt
+  deleted_at               DateTime? /// 회원 탈퇴 시간
+  status                   Status                     @default(ACTIVE)
   ///-------
   /// RELATION
   ///-------
-  users users[]
-  member_socials member_socials[]
-  member_profiles member_profiles[]
+  users                    users[]
+  member_socials           member_socials[]
+  member_profiles          member_profiles[]
   member_profile_snapshots member_profile_snapshots[]
-  member_profile_imgs member_profile_imgs[]
-  member_logs member_logs[]
-  member_salt member_salts?
-  verification_codes verification_codes[]
+  member_profile_imgs      member_profile_imgs[]
+  member_logs              member_logs[]
+  member_salt              member_salts?
+  verification_codes       verification_codes[]
+
   @@unique([email])
   @@index([created_at])
   @@index([email])
   @@index([status])
-
 }
 
 model member_socials {
@@ -87,72 +88,69 @@ model member_socials {
 
   /// 최초 로그인 시간
   created_at DateTime
-  status Status @default(ACTIVE)
+  status     Status   @default(ACTIVE)
 
   ///-------
   /// RELATION
   ///-------
   member members? @relation(fields: [member_id], references: [id])
 
+  @@unique([social_type, uid])
+  @@unique([social_type, nickname])
   @@index([created_at])
-  @@unique([social_type,uid])
-  @@unique([social_type,nickname])
-  @@index([social_type,created_at])
+  @@index([social_type, created_at])
   @@index([uid])
 }
-
 
 /// 회원 프로필 
 model member_profiles {
   member_id String @id @db.Uuid
-  nickname String @db.VarChar
+  nickname  String @db.VarChar
 
   /// 회원 프로필 사진
   profile_image String @db.VarChar
- 
+
   /// 회원 프로필 사진
   profile_image_url String @db.VarChar
-  
 
   /// -------
   /// RELATION
   ///-------
-  member members? @relation(fields: [member_id], references: [id])
+  member     members? @relation(fields: [member_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
   @@unique([nickname])
   @@index([member_id])
   @@index([created_at])
 }
 
-
 model member_profile_snapshots {
-  id String @id @db.Uuid
-  member_id String @db.Uuid
-  nickname String @db.VarChar
-  profile_image String @db.VarChar
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            String   @id @db.Uuid
+  member_id     String   @db.Uuid
+  nickname      String   @db.VarChar
+  profile_image String   @db.VarChar
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   ///-------
   /// RELATION
   ///-------
   member members? @relation(fields: [member_id], references: [id])
-  @@unique([member_id,created_at])
+
+  @@unique([member_id, created_at])
   @@index([member_id])
   @@index([created_at])
 }
 
-
-
 model member_profile_imgs {
-  id String @id @default(uuid())
-  member_id String @db.Uuid
-  img_url String @db.VarChar
+  id         String   @id @default(uuid())
+  member_id  String   @db.Uuid
+  img_url    String   @db.VarChar
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  status Status @default(ACTIVE)
-  
+  status     Status   @default(ACTIVE)
+
   ///-------
   /// RELATION
   ///-------
@@ -160,15 +158,16 @@ model member_profile_imgs {
 }
 
 model member_logs {
-  id String @id @default(uuid())
-  member_id String @db.Uuid
-  ip String @db.VarChar
-  log_type String @db.VarChar
+  id         String   @id @default(uuid())
+  member_id  String   @db.Uuid
+  ip         String   @db.VarChar
+  log_type   String   @db.VarChar
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  status Status @default(ACTIVE)
-  
+  status     Status   @default(ACTIVE)
+
   member members? @relation(fields: [member_id], references: [id])
+
   @@index([member_id])
   @@index([created_at])
   @@index([ip])
@@ -176,13 +175,14 @@ model member_logs {
 }
 
 model member_salts {
-  member_id String @db.Uuid
-  salt String @db.VarChar
+  member_id  String   @db.Uuid
+  salt       String   @db.VarChar
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  status Status @default(ACTIVE)
-  
+  status     Status   @default(ACTIVE)
+
   member members @relation(fields: [member_id], references: [id])
+
   @@unique([member_id])
   @@index([member_id])
   @@index([created_at])
@@ -190,34 +190,31 @@ model member_salts {
 }
 
 model verification_codes {
-  id String @id @db.Uuid
+  id        String @id @db.Uuid
   member_id String @db.Uuid
   /// 인증 코드
-  code String @db.VarChar
+  code      String @db.VarChar
   /// 인증 코드를 발송한 대상
   /// 이메일, 핸드폰 번호
-  target String @db.VarChar
+  target    String @db.VarChar
 
   /// 인증 코드 타입
-  type VerificationCodeType @default(EMAIL)
-  created_at DateTime @default(now())
+  type        VerificationCodeType @default(EMAIL)
+  created_at  DateTime             @default(now())
   /// 인증 코드 만료 시간
-  expired_at DateTime
+  expired_at  DateTime
   /// 인증 코드 사용 여부
-  verified_at DateTime?    
-  status Status @default(ACTIVE)
+  verified_at DateTime?
+  status      Status               @default(ACTIVE)
   ///-------
   /// RELATION
   ///-------
-  member members? @relation(fields: [member_id], references: [id])
-  @@unique([code])
+  member      members?             @relation(fields: [member_id], references: [id])
 
-
-
+  @@unique([member_id, verified_at])
   @@index([created_at])
   @@index([code])
 }
-
 
 //--------------------------------------
 // 1.2. 휴면 회원 관리
@@ -226,11 +223,6 @@ model verification_codes {
 // dormant_members 
 //--------------------------------------
 //--------------------------------------
- 
-
-
-
-
 
 enum SocialType {
   KAKAO
@@ -246,11 +238,8 @@ enum VerificationCodeType {
   SMS
 }
 
-
 enum Status {
   ACTIVE
   INACTIVE
   DELETED
 }
-
-
