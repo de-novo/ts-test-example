@@ -63,4 +63,12 @@ export class AuthService {
   async verifyPassword(password: string, hashedPassword: string) {
     return await bcrypt.compare(password, hashedPassword);
   }
+
+  randomDigit(num: number): string {
+    /// 000000 ~ 999999 사이의 랜덤 숫자 생성
+    const random = Math.floor(Math.random() * 1000000);
+    const randomString = random.toString();
+    const randomDigit = randomString.padStart(num, '0');
+    return randomDigit;
+  }
 }

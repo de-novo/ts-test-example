@@ -128,4 +128,14 @@ describe('auth service', () => {
       expect(verifyActual).toBe(true);
     });
   });
+
+  it('random digit', () => {
+    // Arrange
+    const num = 6;
+    // Act
+    const actual = authService.randomDigit(6);
+    // Assert
+    expect(actual).toHaveLength(num);
+    expect(actual).toMatch(/[0-9]{6}/);
+  });
 });

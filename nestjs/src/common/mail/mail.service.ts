@@ -27,9 +27,6 @@ export class MailService {
         text,
         html,
       })
-      .then((result) => {
-        console.log(result);
-      })
       .catch((error) => {
         console.log(error);
         // 메세지 실패시 메세지큐 저장등의 처리
