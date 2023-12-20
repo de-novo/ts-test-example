@@ -83,7 +83,7 @@ model member_socials {
   password String @db.VarChar
 
   /// 회원 아이디
-  member_id String @db.VarChar
+  member_id String @db.Uuid
 
   /// 최초 로그인 시간
   created_at DateTime

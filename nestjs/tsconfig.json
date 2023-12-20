@@ -26,6 +26,7 @@
       "@config/*": ["./src/config/*"],
       "@utils/*": ["./src/utils/*"]
     },
+    "esModuleInterop": true,
     "plugins": [
       {
         "transform": "@nestia/core/lib/transform",
