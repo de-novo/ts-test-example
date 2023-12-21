@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClient, members, verification_codes } from '@prisma/client';
 import { AuthService } from '@src/auth/auth.service';
@@ -19,7 +20,7 @@ describe('auth service', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       imports: [...commonHelper.imports],
-      providers: [AuthService, ConfigService, PrismaService],
+      providers: [AuthService, ConfigService, PrismaService, JwtService],
     })
       .overrideProvider(PrismaService)
       .useValue(mockDeep<PrismaClient>())
@@ -45,15 +46,53 @@ describe('auth service', () => {
   });
 
   describe('login', () => {
-    it('should return "OK"', async () => {
+    const mockData: Auth.RequestDTO.Login = {
+      email: 'test@test.test',
+      password: 'test1234',
+    };
+    it('SUCCESS', async () => {
       // Arrange
-      const expected = 'OK';
+      authService.jwtSign = jest.fn().mockReturnValue('test');
+      authService.verifyPassword = jest.fn().mockResolvedValue(true);
+      mockPrisma.members.findUnique.mockResolvedValue({
+        ...typia.random<members>(),
+        email: mockData.email,
+        password: 'test1234',
+      });
+      const expected = {
+        access_token: 'test',
+        refresh_token: 'test',
+      };
 
       // Act
-      const actual = await authService.login();
+      const actual = await authService.login(mockData);
       // Assert
-      expect(mockPrisma.users.findUnique).toHaveBeenCalledTimes(0);
-      expect(actual).toBe(expected);
+      expect(actual).toStrictEqual(expected);
+    });
+    it('ERROR: 존재하지 않는 유저', async () => {
+      // Arrange
+      mockPrisma.members.findUnique.mockResolvedValue(null);
+      const expected = typia.random<Error.Auth.EMAIL_NOT_EXIST>();
+
+      // Act
+      const actual = await authService.login(mockData);
+      // Assert
+      expect(actual).toStrictEqual(expected);
+    });
+    it('ERROR: 비밀번호가 일치하지 않는 경우', async () => {
+      // Arrange
+      authService.verifyPassword = jest.fn().mockResolvedValue(false);
+      mockPrisma.members.findUnique.mockResolvedValue({
+        ...typia.random<members>(),
+        email: mockData.email,
+        password: 'test1234',
+      });
+      const expected = typia.random<Error.Auth.INVALID_PASSWORD>();
+
+      // Act
+      const actual = await authService.login(mockData);
+      // Assert
+      expect(actual).toStrictEqual(expected);
     });
   });
 

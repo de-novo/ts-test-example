@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Error } from '@src/common/error';
 import { MailService } from '@src/common/mail/mail.service';
 import { signupMailTemplate } from '@src/common/mail/template/signup.template';
@@ -15,10 +16,34 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async login() {
-    return 'OK';
+  async login(loginDTO: Auth.RequestDTO.Login) {
+    const { email, password } = loginDTO;
+
+    const exist = await this.checkMemberExist(email);
+    if (isError(exist)) {
+      return exist;
+    }
+    const { password: hashedPassword } = exist;
+    const verifyPassword = await this.verifyPassword(password, hashedPassword);
+    if (!verifyPassword) {
+      return typia.random<Error.Auth.INVALID_PASSWORD>();
+    }
+
+    const access_token = this.jwtSign({
+      id: exist.id,
+      email: exist.email,
+    });
+    const refresh_token = this.jwtSign({
+      id: exist.id,
+    });
+
+    return {
+      access_token,
+      refresh_token,
+    };
   }
 
   async signup(signupDTO: Auth.RequestDTO.Signup) {
@@ -152,6 +177,7 @@ export class AuthService {
     }
     return exist;
   }
+
   async checkAlreadyVerifiedCode(member_id: string) {
     const verificatied = await this.prisma.verification_codes.findMany({
       where: {
@@ -196,5 +222,13 @@ export class AuthService {
 
     await this.prisma.$transaction([updateMember, updateVerificationCode]);
     return 'SUCCESS';
+  }
+
+  jwtSign(payload: any) {
+    return this.jwtService.sign(payload);
+  }
+
+  jwtVerify(token: string) {
+    return this.jwtService.verify(token);
   }
 }
