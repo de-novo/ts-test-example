@@ -27,18 +27,32 @@ export class AuthService {
       return exist;
     }
     const { password: hashedPassword } = exist;
+
     const verifyPassword = await this.verifyPassword(password, hashedPassword);
     if (!verifyPassword) {
       return typia.random<Error.Auth.INVALID_PASSWORD>();
     }
 
-    const access_token = this.jwtSign({
-      id: exist.id,
-      email: exist.email,
-    });
-    const refresh_token = this.jwtSign({
-      id: exist.id,
-    });
+    // 본인 인증 관련 로직
+    // 현재는 이메일 인증만 있음
+    // 이후 휴대폰 인증 등이 추가될 수 있음
+    if (!exist.email_verified_at) {
+      return typia.random<Error.Auth.EMAIL_NOT_VERIFIED>();
+    }
+
+    const access_token = this.jwtSign(
+      {
+        id: exist.id,
+        email: exist.email,
+      },
+      'access',
+    );
+    const refresh_token = this.jwtSign(
+      {
+        id: exist.id,
+      },
+      'refresh',
+    );
 
     return {
       access_token,
@@ -224,11 +238,22 @@ export class AuthService {
     return 'SUCCESS';
   }
 
-  jwtSign(payload: any) {
-    return this.jwtService.sign(payload);
+  jwtSign(payload: any, type: 'access' | 'refresh') {
+    return this.jwtService.sign(payload, {
+      secret:
+        type === 'access'
+          ? this.configService.get('accessTokenSecret')
+          : this.configService.get('refreshTokenSecret'),
+      expiresIn: type === 'access' ? '1h' : '7d',
+    });
   }
 
-  jwtVerify(token: string) {
-    return this.jwtService.verify(token);
+  jwtVerify(token: string, type: 'access' | 'refresh') {
+    return this.jwtService.verify(token, {
+      secret:
+        type === 'access'
+          ? this.configService.get('accessTokenSecret')
+          : this.configService.get('refreshTokenSecret'),
+    });
   }
 }

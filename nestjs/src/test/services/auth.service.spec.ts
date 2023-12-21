@@ -58,6 +58,7 @@ describe('auth service', () => {
         ...typia.random<members>(),
         email: mockData.email,
         password: 'test1234',
+        email_verified_at: new Date(),
       });
       const expected = {
         access_token: 'test',
@@ -88,6 +89,22 @@ describe('auth service', () => {
         password: 'test1234',
       });
       const expected = typia.random<Error.Auth.INVALID_PASSWORD>();
+
+      // Act
+      const actual = await authService.login(mockData);
+      // Assert
+      expect(actual).toStrictEqual(expected);
+    });
+    it('ERROR: 이메일 인증이 되지 않은 경우', async () => {
+      // Arrange
+      authService.verifyPassword = jest.fn().mockResolvedValue(true);
+      mockPrisma.members.findUnique.mockResolvedValue({
+        ...typia.random<members>(),
+        email: mockData.email,
+        password: 'test1234',
+        email_verified_at: null,
+      });
+      const expected = typia.random<Error.Auth.EMAIL_NOT_VERIFIED>();
 
       // Act
       const actual = await authService.login(mockData);

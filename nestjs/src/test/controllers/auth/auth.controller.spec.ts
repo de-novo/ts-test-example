@@ -6,6 +6,7 @@ import { AuthService } from '@src/auth/auth.service';
 import { Error } from '@src/common/error';
 import { FilterdErrorReturn, createResponse } from '@src/type';
 import { Auth } from '@src/type/auth.type';
+import { Response } from 'express';
 import { mockDeep } from 'jest-mock-extended';
 import typia from 'typia';
 // ----------------------------------------
@@ -59,15 +60,41 @@ describe('auth controller: default /auth', () => {
   describe('/login', () => {
     describe(':POST', () => {
       describe('try login', () => {
-        it('should return "OK"', async () => {
+        const mockLoginDTO = {
+          email: 'test@test.test',
+          password: 'test1234',
+        };
+        const mockResposne = mockDeep<Response>();
+        it('SUCCESS', async () => {
           // Arrange
-          const expected = 'OK';
+          const token = 'TOKEN';
+          const expected = createResponse({
+            access_token: token,
+            is_login: true,
+          });
+
+          authService.login = jest.fn().mockResolvedValue({
+            access_token: token,
+            refresh_token: token,
+          });
 
           // Act
-          const actual = await authController.login();
+          const actual = await authController.login(mockLoginDTO, mockResposne);
 
           // Assert
-          expect(actual).toBe(expected);
+          expect(actual).toStrictEqual(expected);
+          expect(authService.login).toHaveBeenCalledTimes(1);
+          expect(authService.login).toHaveBeenCalledWith(mockLoginDTO);
+          expect(mockResposne.cookie).toHaveBeenCalledTimes(1);
+          expect(mockResposne.cookie).toHaveBeenCalledWith(
+            'refresh_token',
+            token,
+            {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              maxAge: 1000 * 60 * 60 * 24 * 7,
+            },
+          );
         });
       });
     });

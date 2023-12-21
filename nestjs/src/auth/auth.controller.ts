@@ -1,9 +1,10 @@
 import { TypedBody, TypedRoute } from '@nestia/core';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { AuthService } from '@src//auth/auth.service';
 import { createResponse, isError, throwError } from '@src/type';
 
 import { Auth } from '@src/type/auth.type';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -15,8 +16,25 @@ export class AuthController {
   }
 
   @TypedRoute.Post('/login')
-  async login() {
-    return 'OK';
+  async login(
+    @TypedBody() loginDTO: Auth.RequestDTO.Login,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(loginDTO);
+    if (isError(result)) {
+      return throwError(result);
+    }
+
+    const { access_token, refresh_token } = result;
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+    return createResponse({
+      is_login: true,
+      access_token,
+    });
   }
 
   @TypedRoute.Post('/logout')

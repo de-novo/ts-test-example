@@ -19,6 +19,10 @@ export namespace Error {
       'EMAIL_ALREADY_VERIFIED',
       HttpStatus.BAD_REQUEST
     >;
+    export type EMAIL_NOT_VERIFIED = ERROR<
+      'EMAIL_NOT_VERIFIED',
+      HttpStatus.BAD_REQUEST
+    >;
 
     export type INVALID_PASSWORD = ERROR<
       'INVALID_PASSWORD',
