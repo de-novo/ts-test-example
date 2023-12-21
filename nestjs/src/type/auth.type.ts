@@ -21,5 +21,9 @@ export namespace Auth {
       id: string;
       email: string;
     }
+    export interface Login {
+      is_login: boolean;
+      access_token: string;
+    }
   }
 }
