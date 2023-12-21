@@ -1,6 +1,7 @@
-import { TypedBody, TypedRoute } from '@nestia/core';
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { TypedBody, TypedException, TypedRoute } from '@nestia/core';
+import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
 import { AuthService } from '@src//auth/auth.service';
+import { Error } from '@src/common/error';
 import { SUCCESS, createResponse, isError, throwError } from '@src/type';
 
 import { Auth } from '@src/type/auth.type';
@@ -15,7 +16,48 @@ export class AuthController {
     return 'OK';
   }
 
+  /**
+   * # Login
+   *
+   * ## BODY
+   * - email: string
+   * - password: string
+   *
+   *
+   * ## RESPONSE
+   * ### success
+   * - is_login: true
+   * - access_token: string
+   *
+   * ### fail
+   * - EMAIL_NOT_EXIST : 이메일이 존재하지 않음
+   *   - 이메일이 존재하지 않는 경우, 회원가입을 유도하는 메시지를 띄워야 함
+   * - INVALID_PASSWORD : 비밀번호가 틀림
+   * - EMAIL_NOT_VERIFIED : 본인 인증이 되지 않음
+   *    - 이메일 인증 및 휴대폰 인증을 거치지 않은 사용자는 로그인이 불가능함
+   *    - 현재는 이메일 인증만 구현되어 있음
+   * @author de-novo
+   * @tag Auth
+   * @summary Login API - 로그인
+   * @description 로그인
+   *
+   *
+   * @returns 201 - 로그인 성공
+   *
+   */
   @TypedRoute.Post('/login')
+  @TypedException<Error.Auth.EMAIL_NOT_EXIST>(
+    HttpStatus.BAD_REQUEST + 0.1, // 400.1
+    'EMAIL_NOT_EXIST',
+  )
+  @TypedException<Error.Auth.INVALID_PASSWORD>(
+    HttpStatus.BAD_REQUEST + 0.2, // 400.2
+    'INVALID_PASSWORD',
+  )
+  @TypedException<Error.Auth.EMAIL_NOT_VERIFIED>(
+    HttpStatus.BAD_REQUEST + 0.3, // 400.3
+    'EMAIL_NOT_VERIFIED',
+  )
   async login(
     @TypedBody() loginDTO: Auth.RequestDTO.Login,
     @Res({ passthrough: true }) res: Response,
