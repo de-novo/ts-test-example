@@ -17,7 +17,7 @@ export class AuthController {
   }
 
   /**
-   * # Login
+   * # Login - 로그인
    *
    * ## BODY
    * - email: string
@@ -85,7 +85,30 @@ export class AuthController {
     return 'OK';
   }
 
+  /**
+   * # Signup - 회원가입
+   * ## BODY
+   * - email: string
+   * - password: string
+   *
+   * ## RESPONSE
+   * ### success
+   * - 멤버 정보 - 스키마 참고
+   *
+   * ### fail
+   * - EMAIL_ALREADY_EXIST : 이미 존재하는 이메일
+   *
+   * @tag Auth
+   * @summary Signup API - 회원가입
+   * @description 회원가입
+   *
+   * @returns 201 - 회원가입 성공
+   */
   @TypedRoute.Post('/signup')
+  @TypedException<Error.Auth.EMAIL_ALREADY_EXIST>(
+    HttpStatus.BAD_REQUEST + 0.1, // 400.1
+    'EMAIL_ALREADY_EXIST',
+  )
   async signup(@TypedBody() signupDTO: Auth.RequestDTO.Signup) {
     const result = await this.authService.signup(signupDTO);
     if (isError(result)) {
@@ -109,7 +132,47 @@ export class AuthController {
     return 'OK';
   }
 
+  /**
+   * # Verify Email - 이메일 인증
+   *
+   * ## BODY
+   * - email: string
+   * - code: string
+   *
+   * ## RESPONSE
+   * ### success
+   * - "SUCCESS"
+   *
+   * ### fail
+   * - EMAIL_NOT_EXIST : 이메일이 존재하지 않음
+   * - EMAIL_ALREADY_VERIFIED : 이미 인증된 이메일
+   * - VERIFICATION_CODE_ALREADY_VERIFIED : 이미 인증된 코드
+   * - INVALID_CODE : 인증 코드가 틀림
+   *
+   * @author de-novo
+   * @tag Auth
+   * @summary Verify Email API - 이메일 인증
+   * @description 이메일 인증
+   *
+   * @returns 201 - 이메일 인증 성공
+   */
   @TypedRoute.Patch('/email/verification')
+  @TypedException<Error.Auth.EMAIL_NOT_EXIST>(
+    HttpStatus.BAD_REQUEST + 0.1, // 400.1
+    'EMAIL_NOT_EXIST',
+  )
+  @TypedException<Error.Auth.EMAIL_ALREADY_VERIFIED>(
+    HttpStatus.BAD_REQUEST + 0.2, // 400.2
+    'EMAIL_ALREADY_VERIFIED',
+  )
+  @TypedException<Error.Auth.VERIFICATION_CODE_ALREADY_VERIFIED>(
+    HttpStatus.BAD_REQUEST + 0.3, // 400.3
+    'VERIFICATION_CODE_ALREADY_VERIFIED',
+  )
+  @TypedException<Error.Auth.INVALID_CODE>(
+    HttpStatus.BAD_REQUEST + 0.4, // 400.4
+    'INVALID_CODE',
+  )
   async verifyEmail(@TypedBody() verifyEmailDTO: Auth.RequestDTO.VerifyEmail) {
     const result = await this.authService.verifyEmail(verifyEmailDTO);
     if (isError(result)) {
