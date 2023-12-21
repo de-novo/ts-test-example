@@ -4,7 +4,7 @@ import { members } from '@prisma/client';
 import { AuthController } from '@src/auth/auth.controller';
 import { AuthService } from '@src/auth/auth.service';
 import { Error } from '@src/common/error';
-import { FilterdErrorReturn, createResponse } from '@src/type';
+import { FilteredErrorReturn, createResponse } from '@src/type';
 import { Auth } from '@src/type/auth.type';
 import { Response } from 'express';
 import { mockDeep } from 'jest-mock-extended';
@@ -138,7 +138,7 @@ describe('auth controller: default /auth', () => {
         });
       });
       describe('ERROR', () => {
-        const errCases: FilterdErrorReturn<typeof authService.signup>[] = [
+        const errCases: FilteredErrorReturn<typeof authService.signup>[] = [
           typia.random<Error.Auth.EMAIL_ALREADY_EXIST>(),
         ];
 
@@ -225,12 +225,13 @@ describe('auth controller: default /auth', () => {
       });
 
       describe('ERROR', () => {
-        const errCases: FilterdErrorReturn<typeof authService.verifyEmail>[] = [
-          typia.random<Error.Auth.EMAIL_NOT_EXIST>(),
-          typia.random<Error.Auth.EMAIL_ALREADY_VERIFIED>(),
-          typia.random<Error.Auth.INVALID_CODE>(),
-          typia.random<Error.Auth.VERIFICATION_CODE_ALREADY_VERIFIED>(),
-        ];
+        const errCases: FilteredErrorReturn<typeof authService.verifyEmail>[] =
+          [
+            typia.random<Error.Auth.EMAIL_NOT_EXIST>(),
+            typia.random<Error.Auth.EMAIL_ALREADY_VERIFIED>(),
+            typia.random<Error.Auth.INVALID_CODE>(),
+            typia.random<Error.Auth.VERIFICATION_CODE_ALREADY_VERIFIED>(),
+          ];
 
         test.each(errCases)('should return %p', async (err) => {
           // Arrange

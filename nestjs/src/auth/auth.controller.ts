@@ -1,11 +1,12 @@
 import { TypedBody, TypedException, TypedRoute } from '@nestia/core';
-import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
+import { Controller, HttpStatus, Res } from '@nestjs/common';
 import { AuthService } from '@src//auth/auth.service';
 import { Error } from '@src/common/error';
 import { SUCCESS, createResponse, isError, throwError } from '@src/type';
 
 import { Auth } from '@src/type/auth.type';
 import { Response } from 'express';
+import { assertPrune } from 'typia/lib/misc';
 
 @Controller('auth')
 export class AuthController {
@@ -73,7 +74,6 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
-    console.log(access_token, 'access_token');
     return createResponse({
       is_login: true,
       access_token,
@@ -109,12 +109,15 @@ export class AuthController {
     HttpStatus.BAD_REQUEST + 0.1, // 400.1
     'EMAIL_ALREADY_EXIST',
   )
-  async signup(@TypedBody() signupDTO: Auth.RequestDTO.Signup) {
+  async signup(
+    @TypedBody() signupDTO: Auth.RequestDTO.Signup,
+  ): Promise<SUCCESS<Auth.ResponseDTO.Signup>> {
     const result = await this.authService.signup(signupDTO);
     if (isError(result)) {
       return throwError(result);
     }
-    return createResponse(result);
+    const res = assertPrune<Auth.ResponseDTO.Signup>(result);
+    return createResponse(res);
   }
 
   @TypedRoute.Patch('/password')
@@ -181,9 +184,9 @@ export class AuthController {
     return createResponse(result);
   }
 
-  @Get('/google/oauth2callback')
-  async googleOauth2callback(@Query() code: { code: string }) {
-    console.log(code, '/google/oauth2callback');
-    return 'OK';
-  }
+  // @Get('/google/oauth2callback')
+  // async googleOauth2callback(@Query() code: { code: string }) {
+  //   console.log(code, '/google/oauth2callback');
+  //   return 'OK';
+  // }
 }

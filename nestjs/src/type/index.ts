@@ -1,13 +1,21 @@
 import { HttpException } from '@nestjs/common';
 import { ErrorHttpStatusCode } from '@nestjs/common/utils/http-error-by-code.util';
 
-export type FilterdError<T> = T extends ERROR<infer S, infer H>
+export type FilteredError<T> = T extends ERROR<infer S, infer H>
   ? ERROR<S, H>
   : never;
 
-export type FilterdErrorReturn<T extends (...args: any) => any> = FilterdError<
-  Awaited<ReturnType<T>>
->;
+export type FilteredErrorReturn<T extends (...args: any) => any> =
+  FilteredError<Awaited<ReturnType<T>>>;
+
+export type FilterdedSuccess<T> = T extends SUCCESS<infer S> ? S : never;
+
+export type FilterdedSuccessReturn<T extends (...args: any) => any> =
+  FilterdedSuccess<Awaited<ReturnType<T>>>;
+
+export type FilteredNotError<T> = T extends ERROR<any, any> ? never : T;
+export type FilteredNotErrorReturn<T extends (...args: any) => any> =
+  FilteredNotError<Awaited<ReturnType<T>>>;
 
 export interface ERROR<T, H extends ErrorHttpStatusCode> {
   is_success: false;
